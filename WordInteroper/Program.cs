@@ -14,7 +14,7 @@ namespace WordInteroper
 {
     class Program
     {
-        private const string FilePath = @"C:\Users\connys\Desktop\work\SOSAlarm\EditWordDocument\word_openxml.docx";
+        private const string FilePath = @"";
 
         private static List<FindReplace> TokenReplacements = new List<FindReplace>
         {
