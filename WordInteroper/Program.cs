@@ -1,34 +1,52 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using CSharpFunctionalExtensions;
+
 using static System.Console;
 using Word = Microsoft.Office.Interop.Word;
 
+using CSharpFunctionalExtensions;
+using System.Collections.Generic;
+
 namespace WordInteroper
 {
-    class Program
+    partial class Program
     {
         private const string Token = "__Text to replace__";
-        private const string File1 = @"C:\Users\connys\Desktop\work\SOSAlarm\EditWordDocument\word_openxml.docx";
+        private const string FilePath = @"C:\Users\connys\Desktop\work\SOSAlarm\EditWordDocument\word_openxml.docx";
+
+        private static List<FindReplace> TokenReplacements = new List<FindReplace>
+        {
+            new FindReplace { Token = "__Text to replace__", Replacement = "TokenReplacement" },
+        };
 
         private static void Main(string[] args)
         {
-            Word.Application app = null;
-            Word.Document document = null;
+            WordEdit wordEdit = null;
             try
             {
-                Maybe<Process> processResult = CheckProcessIsRunning();
-                if (processResult.HasValue)
+                EnsureProcessClosed("WINWORD");
+                FileInfo fileInfo = new FileInfo(FilePath);
+                wordEdit = WordEdit.OpenEdit(fileInfo);
+                Result replaceTokensResult = ReplaceTokens(wordEdit, TokenReplacements);
+                
+                if(replaceTokensResult.IsFailure)
                 {
-                    processResult.Value.Kill();
+                    WriteLine(replaceTokensResult.Error);
+                    WriteLine("Press any key to terminate the app. No changes will be made.");
+                    ReadKey();
+                    return;
                 }
-                app = new Word.Application();
-                document = app.Documents.Open(File1, ReadOnly: false, Visible: true);
-                Work(app, document);
+
+                string pdfFilePath = Path.ChangeExtension(wordEdit.OriginalFile.FullName, "pdf");
+                Result saveAsPdfResult = wordEdit.Document.ExportAsPdf(pdfFilePath);
+
+                if(saveAsPdfResult.IsSuccess)
+                    WriteLine($"Pdf saved at: {pdfFilePath}");
+                else
+                    WriteLine(saveAsPdfResult.Error);
             }
             catch (Exception ex)
             {
@@ -36,59 +54,46 @@ namespace WordInteroper
             }
             finally
             {
-                ReleaseResources(app, document);
+                wordEdit.ReleaseResources();
             }
 
             DebugWrite("All done. Press any key to quit");
         }
 
-        private static void ReleaseResources(Word._Application app, Word._Document document)
+        public static void EnsureProcessClosed(string processName)
         {
-            if (document != null)
-            {
-                document.Close(Word.WdSaveOptions.wdDoNotSaveChanges);
-                Marshal.ReleaseComObject(document);
-            }
+            Contracts.Require(processName.HasValue());
 
-            if (app != null)
-            {
-                app.Quit();
-                Marshal.ReleaseComObject(app);
-                Marshal.FinalReleaseComObject(app);
-            }
-        }
+            Maybe<Process> processResult = Process.GetProcesses()
+                .FirstOrDefault(p => p.ProcessName.Contains(processName, StringComparison.OrdinalIgnoreCase));
 
-        private static Maybe<Process> CheckProcessIsRunning()
-        {
-            return Process.GetProcesses()
-                .FirstOrDefault(p => p.ProcessName.Contains("WINWORD", StringComparison.OrdinalIgnoreCase));
+            if (processResult.HasValue)
+            {
+                processResult.Value.Kill();
+            }
         }
 
         [Conditional("DEBUG")]
-        private static void DebugWrite(string message)
+        public static void DebugWrite(string message)
         {
             WriteLine(message);
         }
 
-        private static void Work(Word._Application app, Word._Document doc)
+        public static Result ReplaceTokens(WordEdit word, IReadOnlyList<FindReplace> tokenReplacements)
         {
-            const string replacement = "some replacement";
-            DebugWrite($"Find:{Token} Replace: {replacement}");
-            Result replaceResult = app.Replace(Token, replacement, Word.WdReplace.wdReplaceAll);
-            if (replaceResult.IsSuccess)
+            Contracts.Require(tokenReplacements.Any(), "No tokens provided.");
+            foreach (FindReplace item in tokenReplacements)
             {
-                string path = Path.Combine(Path.GetDirectoryName(File1), "test.pdf");
-                Result result = doc.ExportAsPdf(new FileInfo(path));
+                Result replaceResult = word.Application.Replace(item.Token, item.Replacement, Word.WdReplace.wdReplaceAll);
 
-                if (result.IsSuccess)
+                if (replaceResult.IsFailure)
                 {
-                    WriteLine("Replaced and saved document");
+                    WriteLine(replaceResult.Error);
+                    return replaceResult;
                 }
             }
-            else
-            {
-                WriteLine(replaceResult.Error);
-            }
+
+            return Result.Ok();
         }
     }
 }

@@ -4,9 +4,14 @@ namespace WordInteroper
 {
     public static class StringExtensions
     {
-        public static bool Contains(this string source, string toCheck, StringComparison comp)
+        public static bool Contains(this string source, string substring, StringComparison comparer)
         {
-            return source?.IndexOf(toCheck, comp) >= 0;
+            return source?.IndexOf(substring, comparer) >= 0;
+        }
+
+        public static bool HasValue(this string source)
+        {
+            return string.IsNullOrWhiteSpace(source);
         }
 
     }

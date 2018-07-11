@@ -6,11 +6,16 @@ namespace WordInteroper
 {
     public static class WordDocExtensions
     {
-        public static Result ExportAsPdf(this Microsoft.Office.Interop.Word._Document doc, FileInfo file)
+        public static Result ExportAsPdf(this Microsoft.Office.Interop.Word._Document doc, FileInfo fileInfo)
+        {
+            return doc.ExportAsPdf(fileInfo);
+        }
+
+        public static Result ExportAsPdf(this Microsoft.Office.Interop.Word._Document doc, string filePath)
         {
             try
             {
-                doc.ExportAsFixedFormat(file.FullName, Microsoft.Office.Interop.Word.WdExportFormat.wdExportFormatPDF);
+                doc.ExportAsFixedFormat(filePath, Microsoft.Office.Interop.Word.WdExportFormat.wdExportFormatPDF);
                 return Result.Ok();
             }
             catch(Exception ex)

@@ -55,7 +55,7 @@ namespace WordInteroper
             }
             catch (COMException ex)
             {
-                return Result.Fail(ex.Message + "Check if word is already open prior to running program");
+                return Result.Fail(ex.Message + ". Check if word is already open prior to running program");
             }
             catch (Exception ex)
             {
