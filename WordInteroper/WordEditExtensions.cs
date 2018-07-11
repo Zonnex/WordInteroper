@@ -1,4 +1,8 @@
+using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
+
+using CSharpFunctionalExtensions;
 using Word = Microsoft.Office.Interop.Word;
 
 namespace WordInteroper
@@ -22,6 +26,23 @@ namespace WordInteroper
                 Marshal.ReleaseComObject(app);
                 Marshal.FinalReleaseComObject(app);
             }
+        }
+
+        public static Result ReplaceTokens(this WordEdit word, IReadOnlyList<FindReplace> tokenReplacements)
+        {
+            Contracts.Require(tokenReplacements.Any(), "No tokens provided.");
+            
+            foreach (FindReplace item in tokenReplacements)
+            {
+                Result replaceResult = word.Application.Replace(item.Token, item.Replacement, Word.WdReplace.wdReplaceAll);
+
+                if (replaceResult.IsFailure)
+                {
+                    return replaceResult;
+                }
+            }
+
+            return Result.Ok();
         }
     }
 }

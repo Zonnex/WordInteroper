@@ -4,25 +4,25 @@ using CSharpFunctionalExtensions;
 
 namespace WordInteroper
 {
-    public static class WordFindExtensions
+    public class ReplaceOptions
     {
-        public class ReplaceOptions
-        {
-            public static ReplaceOptions Default = new ReplaceOptions();
-            public bool MatchCase = false;
-            public bool MatchWholeWord = true;
-            public bool MatchWildcards = false;
-            public bool MatchSoundsLike = false;
-            public bool MatchAllWordForms = false;
-            public bool Forward = true;
-            public bool Format = false;
-            public bool MatchKashida = false;
-            public bool MatchDiacritics = false;
-            public bool MatchAlefHamza = false;
-            public bool MatchControl = false;
-            public int Wrap = 1;
-        }
+        public static ReplaceOptions Default = new ReplaceOptions();
+        public bool MatchCase = false;
+        public bool MatchWholeWord = true;
+        public bool MatchWildcards = false;
+        public bool MatchSoundsLike = false;
+        public bool MatchAllWordForms = false;
+        public bool Forward = true;
+        public bool Format = false;
+        public bool MatchKashida = false;
+        public bool MatchDiacritics = false;
+        public bool MatchAlefHamza = false;
+        public bool MatchControl = false;
+        public int Wrap = 1;
+    }
 
+    internal static class WordFindExtensions
+    {
         public static Result Replace(
             this Microsoft.Office.Interop.Word.Find find,
             Microsoft.Office.Interop.Word.WdReplace wordReplace,

@@ -14,7 +14,6 @@ namespace WordInteroper
 {
     partial class Program
     {
-        private const string Token = "__Text to replace__";
         private const string FilePath = @"C:\Users\connys\Desktop\work\SOSAlarm\EditWordDocument\word_openxml.docx";
 
         private static List<FindReplace> TokenReplacements = new List<FindReplace>
@@ -30,7 +29,7 @@ namespace WordInteroper
                 EnsureProcessClosed("WINWORD");
                 FileInfo fileInfo = new FileInfo(FilePath);
                 wordEdit = WordEdit.OpenEdit(fileInfo);
-                Result replaceTokensResult = ReplaceTokens(wordEdit, TokenReplacements);
+                Result replaceTokensResult = wordEdit.ReplaceTokens(TokenReplacements);
                 
                 if(replaceTokensResult.IsFailure)
                 {
@@ -43,10 +42,11 @@ namespace WordInteroper
                 string pdfFilePath = Path.ChangeExtension(wordEdit.OriginalFile.FullName, "pdf");
                 Result saveAsPdfResult = wordEdit.Document.ExportAsPdf(pdfFilePath);
 
-                if(saveAsPdfResult.IsSuccess)
-                    WriteLine($"Pdf saved at: {pdfFilePath}");
-                else
-                    WriteLine(saveAsPdfResult.Error);
+                string outputMessage = saveAsPdfResult.IsSuccess
+                    ? $"Pdf saved at: {pdfFilePath}"
+                    : saveAsPdfResult.Error;
+
+                WriteLine(outputMessage);
             }
             catch (Exception ex)
             {
@@ -77,23 +77,6 @@ namespace WordInteroper
         public static void DebugWrite(string message)
         {
             WriteLine(message);
-        }
-
-        public static Result ReplaceTokens(WordEdit word, IReadOnlyList<FindReplace> tokenReplacements)
-        {
-            Contracts.Require(tokenReplacements.Any(), "No tokens provided.");
-            foreach (FindReplace item in tokenReplacements)
-            {
-                Result replaceResult = word.Application.Replace(item.Token, item.Replacement, Word.WdReplace.wdReplaceAll);
-
-                if (replaceResult.IsFailure)
-                {
-                    WriteLine(replaceResult.Error);
-                    return replaceResult;
-                }
-            }
-
-            return Result.Ok();
         }
     }
 }

@@ -4,13 +4,8 @@ using CSharpFunctionalExtensions;
 
 namespace WordInteroper
 {
-    public static class WordDocExtensions
+    public static class WordDocumentExtensions
     {
-        public static Result ExportAsPdf(this Microsoft.Office.Interop.Word._Document doc, FileInfo fileInfo)
-        {
-            return doc.ExportAsPdf(fileInfo);
-        }
-
         public static Result ExportAsPdf(this Microsoft.Office.Interop.Word._Document doc, string filePath)
         {
             try
