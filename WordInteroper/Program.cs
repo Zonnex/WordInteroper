@@ -12,7 +12,7 @@ using System.Collections.Generic;
 
 namespace WordInteroper
 {
-    partial class Program
+    class Program
     {
         private const string FilePath = @"C:\Users\connys\Desktop\work\SOSAlarm\EditWordDocument\word_openxml.docx";
 
