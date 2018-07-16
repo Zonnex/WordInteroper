@@ -5,7 +5,7 @@ using CSharpFunctionalExtensions;
 
 namespace WordInteroper
 {
-    public static class WordAppExtensions
+    internal static class WordAppExtensions
     {
         public static Result Replace(
             this _Application app, 

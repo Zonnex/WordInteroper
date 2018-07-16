@@ -11,8 +11,7 @@ namespace WordInteroper
 
         public static bool HasValue(this string source)
         {
-            return string.IsNullOrWhiteSpace(source);
+            return !string.IsNullOrWhiteSpace(source);
         }
-
     }
 }
