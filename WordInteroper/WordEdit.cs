@@ -11,8 +11,17 @@ namespace WordInteroper
 {
     public class WordEdit : IDisposable
     {
+        public static WordEdit OpenEdit(string filePath)
+        {
+            Contracts.Require(filePath.HasValue());
+            Contracts.Require(Path.GetExtension(filePath) == ".docx", "only .docx files supported");
+
+            return OpenEdit(new FileInfo(filePath));
+        }
+
         public static WordEdit OpenEdit(FileInfo wordFile)
         {
+            Contracts.Require(wordFile.Exists);
             Contracts.Require(wordFile.Extension == ".docx", "only .docx files supported");
 
             var app = new Word.Application();
@@ -31,6 +40,8 @@ namespace WordInteroper
 
         public Result ExportAsPdf(string path)
         {
+            Contracts.Require(path.HasValue());
+            Contracts.Require(Path.GetExtension(path) == ".pdf");
             try
             {
                 Document.ExportAsFixedFormat(path, Word.WdExportFormat.wdExportFormatPDF);
