@@ -1,6 +1,6 @@
 namespace WordInteroper
 {
-    public class FindReplace
+    public class TokenReplace
     {
         public string Token { get; set; }
         public string Replacement { get; set; }

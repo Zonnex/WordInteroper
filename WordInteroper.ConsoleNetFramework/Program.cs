@@ -1,21 +1,18 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
-using static System.Console;
-using Word = Microsoft.Office.Interop.Word;
 using CSharpFunctionalExtensions;
-using System.Collections.Generic;
 
-namespace WordInteroper
+namespace WordInteroper.ConsoleNetFramework
 {
     class Program
     {
-        private static readonly List<FindReplace> TokenReplacements = new List<FindReplace>
+        private static readonly List<TokenReplace> TokenReplacements = new List<TokenReplace>
         {
-            new FindReplace { Token = "__Text to replace__", Replacement = "TokenReplacement" },
-            new FindReplace { Token = "__Token2__", Replacement = "Token2Replacement" },
+            new TokenReplace { Token = "__Text to replace__", Replacement = "TokenReplacement" },
+            new TokenReplace { Token = "__Token2__", Replacement = "Token2Replacement" },
         };
 
         private static void Main(string[] args)
@@ -28,9 +25,9 @@ namespace WordInteroper
 
                 if (replaceTokensResult.IsFailure)
                 {
-                    WriteLine(replaceTokensResult.Error);
-                    WriteLine("Press any key to terminate the app. No changes will be made.");
-                    ReadKey();
+                    Console.WriteLine(replaceTokensResult.Error);
+                    Console.WriteLine("Press any key to close the program. No changes will be made.");
+                    Console.ReadKey();
                     return;
                 }
 
@@ -41,10 +38,10 @@ namespace WordInteroper
                     ? $"Pdf saved at: {pdfFilePath}"
                     : saveAsPdfResult.Error;
 
-                WriteLine(outputMessage);
+                Console.WriteLine(outputMessage);
             }
 
-            WriteLine("All done. Press any key to quit");
+            Console.WriteLine("All done. Press any key to quit");
         }
 
         public static void EnsureProcessClosed(string processName)
@@ -56,15 +53,15 @@ namespace WordInteroper
 
             if (processResult.HasValue)
             {
-                WriteLine("Detected Word process active. Terminating process.");
+                Console.WriteLine("Detected Word process active. Terminating process.");
                 processResult.Value.Kill();
             }
         }
 
         public static string GetUserInput(string message)
         {
-            WriteLine(message);
-            return ReadLine();
+            Console.WriteLine(message);
+            return Console.ReadLine();
         }
     }
 }

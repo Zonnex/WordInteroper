@@ -1,24 +1,22 @@
 ﻿using System;
+using CSharpFunctionalExtensions;
 using Microsoft.Office.Interop.Word;
 
-using CSharpFunctionalExtensions;
-
-namespace WordInteroper
+namespace WordInteroper.Extensions
 {
     internal static class WordAppExtensions
     {
-        public static Result Replace(
+        public static Result ReplaceToken(
             this _Application app, 
-            string textToFind, 
-            string replacement, 
-            WdReplace wordReplace,
+            TokenReplace tokenReplace, 
+            WdReplace wordReplace = WdReplace.wdReplaceAll,
             Action<ReplaceOptions> configureOptions = null)
         {
             Find findObject = app.Selection.Find;
             findObject.ClearFormatting();
-            findObject.Text = textToFind;
+            findObject.Text = tokenReplace.Token;
             findObject.Replacement.ClearFormatting();
-            findObject.Replacement.Text = replacement;
+            findObject.Replacement.Text = tokenReplace.Replacement;
 
             return findObject.Replace(wordReplace, configureOptions);
         }

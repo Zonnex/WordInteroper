@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using CSharpFunctionalExtensions;
+using WordInteroper.Extensions;
 using Word = Microsoft.Office.Interop.Word;
 
 namespace WordInteroper
@@ -23,22 +24,31 @@ namespace WordInteroper
                 OriginalFile = wordFile
             };
         }
+
         public Word.Application Application { get; private set; }
         public Word.Document Document  { get; private set; }
         public FileInfo OriginalFile { get; private set; }
 
         public Result ExportAsPdf(string path)
         {
-            return Document.ExportAsPdf(path);
+            try
+            {
+                Document.ExportAsFixedFormat(path, Word.WdExportFormat.wdExportFormatPDF);
+                return Result.Ok();
+            }
+            catch (Exception ex)
+            {
+                return Result.Fail(ex.Message);
+            }
         }
 
-        public Result ReplaceTokens(IReadOnlyList<FindReplace> tokenReplacements)
+        public Result ReplaceTokens(IReadOnlyList<TokenReplace> tokenReplacements)
         {
             Contracts.Require(tokenReplacements.Any(), "No tokens provided.");
 
-            foreach (FindReplace item in tokenReplacements)
+            foreach (TokenReplace item in tokenReplacements)
             {
-                Result replaceResult = Application.Application.Replace(item.Token, item.Replacement, Word.WdReplace.wdReplaceAll);
+                Result replaceResult = Application.ReplaceToken(item);
 
                 if (replaceResult.IsFailure)
                 {

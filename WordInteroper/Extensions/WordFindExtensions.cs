@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using CSharpFunctionalExtensions;
 
-namespace WordInteroper
+namespace WordInteroper.Extensions
 {
     public class ReplaceOptions
     {
