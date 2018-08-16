@@ -1,24 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using CSharpFunctionalExtensions;
+using WordInteroper.Extensions;
 
 namespace WordInteroper.ConsoleNetFramework
 {
     class Program
     {
-        private static readonly List<TokenReplace> TokenReplacements = new List<TokenReplace>
+        private static readonly List<TokenReplacement> TokenReplacements = new List<TokenReplacement>
         {
-            new TokenReplace { Token = "__Text to replace__", Replacement = "TokenReplacement" },
-            new TokenReplace { Token = "__Token2__", Replacement = "Token2Replacement" },
+            new TokenReplacement { Token = "__DATE__", Replacement = DateTime.Today.ToString(CultureInfo.InvariantCulture)},
         };
 
         private static void Main(string[] args)
         {
             EnsureProcessClosed("WINWORD");
-            var fileInfo = new FileInfo(GetUserInput("Enter file path to docx file"));
+            //var fileInfo = new FileInfo(GetUserInput("Enter file path to docx file"));
+            var fileInfo = new FileInfo(@"C:\dev\ActiveSolution\SOSAlarm\OrderWeb\OrderWeb.WordInterop\Document\Transportmeddelande vid transport mellan vårdenheter 2.0.docx");
             using (WordEdit wordEdit = WordEdit.OpenEdit(fileInfo))
             {
                 Result replaceTokensResult = wordEdit.ReplaceTokens(TokenReplacements);
@@ -30,12 +32,12 @@ namespace WordInteroper.ConsoleNetFramework
                     Console.ReadKey();
                     return;
                 }
-
-                string pdfFilePath = Path.ChangeExtension(wordEdit.OriginalFile.FullName, "pdf");
-                Result saveAsPdfResult = wordEdit.ExportAsPdf(pdfFilePath);
+                
+                FileInfo outputFile = wordEdit.File.ChangeExtension("pdf");
+                Result saveAsPdfResult = wordEdit.ExportAsPdf(outputFile.FullName);
 
                 string outputMessage = saveAsPdfResult.IsSuccess
-                    ? $"Pdf saved at: {pdfFilePath}"
+                    ? $"Pdf saved at: {outputFile.FullName}"
                     : saveAsPdfResult.Error;
 
                 Console.WriteLine(outputMessage);

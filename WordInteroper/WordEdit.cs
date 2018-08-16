@@ -4,17 +4,24 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using CSharpFunctionalExtensions;
+using Microsoft.Office.Interop.Word;
 using WordInteroper.Extensions;
 using Word = Microsoft.Office.Interop.Word;
 
 namespace WordInteroper
 {
+    public interface IWordCheckBox
+    {
+        string Title { get; }
+        string Tag { get; }
+        bool Checked { get; set; }
+    }
+
     public class WordEdit : IDisposable
     {
         public static WordEdit OpenEdit(string filePath)
         {
             Contracts.Require(filePath.HasValue());
-            Contracts.Require(Path.GetExtension(filePath) == ".docx", "only .docx files supported");
 
             return OpenEdit(new FileInfo(filePath));
         }
@@ -24,19 +31,55 @@ namespace WordInteroper
             Contracts.Require(wordFile.Exists);
             Contracts.Require(wordFile.Extension == ".docx", "only .docx files supported");
 
-            var app = new Word.Application();
+            Word.Application app = new Word.Application();
             Word.Document document = app.Documents.Open(wordFile.FullName, ReadOnly: false, Visible: true);
+
+            //Word.ContentControl contentControl = app.Selection.ContentControls.Add(Word.WdContentControlType.wdContentControlCheckBox);
+            var boolValues = new []
+            {
+                new SetCheckBox
+                {
+                    Title = "Kognitiv-Svikt-Förvirring",
+                    Tag = "False",
+                    Checked = true
+                },
+                new SetCheckBox
+                {
+                    Title = "Kognitiv-Svikt-Förvirring",
+                    Tag = "True",
+                    Checked = false
+                },
+            };
+            SetCheckboxes(document, boolValues);
             return new WordEdit
             {
                 Application = app,
                 Document = document,
-                OriginalFile = wordFile
+                File = wordFile
             };
+
+            //Word.Application OpenWord()
+            //{
+            //    return Marshal.GetActiveObject("Word.Application") as Word.Application
+            //        ?? new Word.Application();
+            //}
         }
 
         public Word.Application Application { get; private set; }
         public Word.Document Document  { get; private set; }
-        public FileInfo OriginalFile { get; private set; }
+        public FileInfo File { get; private set; }
+
+        private static void SetCheckboxes(Word.Document document, IEnumerable<IWordCheckBox> checkboxValues)
+        {
+            (dynamic WordCheckbox, IWordCheckBox SetCheckBox)[] valueTuples = document.GetCheckboxes()
+                .Join(checkboxValues, d => (d.Title, d.Tag), c => (c.Title, c.Tag), (d, c) => (WordCheckbox: d, SetCheckBox: c))
+                .ToArray();
+
+            foreach ((dynamic WordCheckbox, IWordCheckBox SetCheckBox) valueTuple in valueTuples)
+            {
+                valueTuple.WordCheckbox.Checked = valueTuple.SetCheckBox.Checked;
+            }
+        }
 
         public Result ExportAsPdf(string path)
         {
@@ -53,11 +96,11 @@ namespace WordInteroper
             }
         }
 
-        public Result ReplaceTokens(IReadOnlyList<TokenReplace> tokenReplacements)
+        public Result ReplaceTokens(IReadOnlyList<TokenReplacement> tokenReplacements)
         {
             Contracts.Require(tokenReplacements.Any(), "No tokens provided.");
 
-            foreach (TokenReplace item in tokenReplacements)
+            foreach (TokenReplacement item in tokenReplacements)
             {
                 Result replaceResult = Application.ReplaceToken(item);
 

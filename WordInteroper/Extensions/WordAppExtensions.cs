@@ -8,7 +8,7 @@ namespace WordInteroper.Extensions
     {
         public static Result ReplaceToken(
             this _Application app, 
-            TokenReplace tokenReplace, 
+            TokenReplacement tokenReplace, 
             WdReplace wordReplace = WdReplace.wdReplaceAll,
             Action<ReplaceOptions> configureOptions = null)
         {

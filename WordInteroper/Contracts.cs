@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Reflection;
 
@@ -6,6 +7,7 @@ namespace WordInteroper
 {
     public static class Contracts
     {
+        [DebuggerStepThrough]
         public static void Require(bool precondition, string errorMessage = "", [CallerMemberName]string method = null)
         {
             if(!precondition)
@@ -17,6 +19,7 @@ namespace WordInteroper
             }
         }
 
+        [DebuggerStepThrough]
         public static void Require<TException>(bool precondition, string errorMessage = "", [CallerMemberName]string method = null)
             where TException : Exception
         {
