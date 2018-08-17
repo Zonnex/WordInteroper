@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace WordInteroper
+namespace WordInteroper.Extensions
 {
     public static class StringExtensions
     {

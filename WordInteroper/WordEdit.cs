@@ -85,7 +85,7 @@ namespace WordInteroper
             {
                 wordCheckbox.Checked = wordCheckBox.Checked;
             }
-
+            
             return Result.Ok();
         }
 
