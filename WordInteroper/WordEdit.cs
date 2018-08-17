@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using CSharpFunctionalExtensions;
-using Microsoft.Office.Interop.Word;
 using WordInteroper.Extensions;
 using Word = Microsoft.Office.Interop.Word;
 
@@ -14,7 +13,13 @@ namespace WordInteroper
     {
         string Title { get; }
         string Tag { get; }
-        bool Checked { get; set; }
+        bool Checked { get; }
+    }
+
+    public enum LoadMode
+    {
+        FullDispose,
+        KeepAlive,
     }
 
     public class WordEdit : IDisposable
@@ -26,59 +31,62 @@ namespace WordInteroper
             return OpenEdit(new FileInfo(filePath));
         }
 
+        public static WordEdit OpenEdit(string filePath, LoadMode loadMode)
+        {
+            Contracts.Require(filePath.HasValue());
+
+            return OpenEdit(new FileInfo(filePath), loadMode);
+        }
+
         public static WordEdit OpenEdit(FileInfo wordFile)
+        {
+            return OpenEdit(wordFile, LoadMode.FullDispose);
+        }
+
+        public static WordEdit OpenEdit(FileInfo wordFile, LoadMode loadMode)
         {
             Contracts.Require(wordFile.Exists);
             Contracts.Require(wordFile.Extension == ".docx", "only .docx files supported");
 
-            Word.Application app = new Word.Application();
+            Word.Application app = OpenWord();
             Word.Document document = app.Documents.Open(wordFile.FullName, ReadOnly: false, Visible: true);
 
-            //Word.ContentControl contentControl = app.Selection.ContentControls.Add(Word.WdContentControlType.wdContentControlCheckBox);
-            var boolValues = new []
-            {
-                new SetCheckBox
-                {
-                    Title = "Kognitiv-Svikt-Förvirring",
-                    Tag = "False",
-                    Checked = true
-                },
-                new SetCheckBox
-                {
-                    Title = "Kognitiv-Svikt-Förvirring",
-                    Tag = "True",
-                    Checked = false
-                },
-            };
-            SetCheckboxes(document, boolValues);
             return new WordEdit
             {
                 Application = app,
                 Document = document,
-                File = wordFile
+                File = wordFile,
+                LoadMode = loadMode
             };
 
-            //Word.Application OpenWord()
-            //{
-            //    return Marshal.GetActiveObject("Word.Application") as Word.Application
-            //        ?? new Word.Application();
-            //}
+            Word.Application OpenWord()
+            {
+                return loadMode == LoadMode.FullDispose
+                    ? new Word.Application()
+                    : Marshal.GetActiveObject("Word.Application") as Word.Application;
+            }
         }
 
         public Word.Application Application { get; private set; }
         public Word.Document Document  { get; private set; }
         public FileInfo File { get; private set; }
+        protected LoadMode LoadMode { get; private set; }
 
-        private static void SetCheckboxes(Word.Document document, IEnumerable<IWordCheckBox> checkboxValues)
+        public Result SetCheckboxes(IEnumerable<IWordCheckBox> checkboxValues)
         {
-            (dynamic WordCheckbox, IWordCheckBox SetCheckBox)[] valueTuples = document.GetCheckboxes()
+            // ReSharper disable once PossibleMultipleEnumeration
+            Contracts.RequireNotNull(checkboxValues);
+
+            (dynamic WordCheckbox, IWordCheckBox SetCheckBox)[] valueTuples = Document.GetCheckboxes()
                 .Join(checkboxValues, d => (d.Title, d.Tag), c => (c.Title, c.Tag), (d, c) => (WordCheckbox: d, SetCheckBox: c))
                 .ToArray();
 
-            foreach ((dynamic WordCheckbox, IWordCheckBox SetCheckBox) valueTuple in valueTuples)
+            foreach ((dynamic wordCheckbox, IWordCheckBox wordCheckBox) in valueTuples)
             {
-                valueTuple.WordCheckbox.Checked = valueTuple.SetCheckBox.Checked;
+                wordCheckbox.Checked = wordCheckBox.Checked;
             }
+
+            return Result.Ok();
         }
 
         public Result ExportAsPdf(string path)
@@ -98,7 +106,7 @@ namespace WordInteroper
 
         public Result ReplaceTokens(IReadOnlyList<TokenReplacement> tokenReplacements)
         {
-            Contracts.Require(tokenReplacements.Any(), "No tokens provided.");
+            Contracts.RequireNotNull(tokenReplacements);
 
             foreach (TokenReplacement item in tokenReplacements)
             {
@@ -129,7 +137,7 @@ namespace WordInteroper
                     Marshal.ReleaseComObject(Document);
                 }
 
-                if (Application != null)
+                if (Application != null && LoadMode == LoadMode.FullDispose)
                 {
                     Application.Quit();
                     Marshal.ReleaseComObject(Application);

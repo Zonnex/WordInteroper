@@ -7,6 +7,12 @@ namespace WordInteroper
 {
     public static class Contracts
     {
+        public static void RequireNotNull<T>(T item, [CallerMemberName]string method = null)
+        {
+            if (item == null)
+                throw new ArgumentNullException($"Null parameter in method: {method}");
+        }
+
         [DebuggerStepThrough]
         public static void Require(bool precondition, string errorMessage = "", [CallerMemberName]string method = null)
         {
