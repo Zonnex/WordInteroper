@@ -1,6 +1,7 @@
 ﻿using System;
 using CSharpFunctionalExtensions;
 using Microsoft.Office.Interop.Word;
+using WordInteroper.Models;
 
 namespace WordInteroper.Extensions
 {

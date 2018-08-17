@@ -4,18 +4,15 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using CSharpFunctionalExtensions;
+
 using WordInteroper.Extensions;
+using WordInteroper.Interfaces;
+using WordInteroper.Models;
+
 using Word = Microsoft.Office.Interop.Word;
 
 namespace WordInteroper
 {
-    public interface IWordCheckBox
-    {
-        string Title { get; }
-        string Tag { get; }
-        bool Checked { get; }
-    }
-
     public enum LoadMode
     {
         FullDispose,

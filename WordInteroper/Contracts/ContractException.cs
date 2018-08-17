@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.Serialization;
 
+// ReSharper disable once CheckNamespace
 namespace WordInteroper
 {
     [Serializable]

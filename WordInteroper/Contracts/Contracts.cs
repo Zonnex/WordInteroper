@@ -1,8 +1,9 @@
 using System;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
+// ReSharper disable once CheckNamespace
 namespace WordInteroper
 {
     public static class Contracts

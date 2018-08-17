@@ -1,4 +1,4 @@
-﻿namespace WordInteroper
+namespace WordInteroper.Models
 {
     public class TokenReplacement
     {

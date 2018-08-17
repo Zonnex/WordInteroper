@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using CSharpFunctionalExtensions;
+using WordInteroper.Interfaces;
+using WordInteroper.Models;
 
 namespace WordInteroper.ConsoleNetFramework
 {
